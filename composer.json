@@ -1,0 +1,62 @@
+{
+    "name": "voipforall/laravel-asterisk-ari",
+    "description": "Laravel integration for Asterisk REST Interface (ARI)",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "asterisk",
+        "ari",
+        "voip",
+        "pbx",
+        "pjsip"
+    ],
+    "authors": [
+        {
+            "name": "VoIPforAll",
+            "email": "dev@voipforall.com.br"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0|^12.0",
+        "illuminate/http": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0",
+        "ratchet/pawl": "^0.4"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0|^10.0",
+        "pestphp/pest": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "VoIPforAll\\AsteriskAri\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "VoIPforAll\\AsteriskAri\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "VoIPforAll\\AsteriskAri\\AsteriskAriServiceProvider"
+            ],
+            "aliases": {
+                "Ari": "VoIPforAll\\AsteriskAri\\Facades\\Ari"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
