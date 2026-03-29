@@ -13,8 +13,6 @@ use RuntimeException;
 
 class WebSocketClient
 {
-    private string $url;
-
     private ?LoopInterface $loop = null;
 
     private ?WebSocket $connection = null;
@@ -32,14 +30,17 @@ class WebSocketClient
         private readonly string $password,
         private readonly string $app,
         private readonly string $scheme = 'ws',
-    ) {
+    ) {}
+
+    private function buildUrl(): string
+    {
         $query = http_build_query([
             'api_key' => "{$this->user}:{$this->password}",
             'app' => $this->app,
             'subscribeAll' => 'true',
         ]);
 
-        $this->url = "{$this->scheme}://{$this->host}:{$this->port}/ari/events?{$query}";
+        return "{$this->scheme}://{$this->host}:{$this->port}/ari/events?{$query}";
     }
 
     public function listen(Closure $onEvent, ?Closure $onClose = null, ?Closure $onError = null): void
@@ -56,7 +57,7 @@ class WebSocketClient
     {
         $connector = new Connector($this->loop);
 
-        $connector($this->url)->then(
+        $connector($this->buildUrl())->then(
             function (WebSocket $conn) use ($onEvent, $onClose, $onError) {
                 $this->connection = $conn;
                 $this->reconnectAttempts = 0;

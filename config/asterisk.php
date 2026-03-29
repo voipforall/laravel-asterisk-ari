@@ -8,7 +8,7 @@ return [
 
     'user' => env('ASTERISK_ARI_USER', 'asterisk'),
 
-    'password' => env('ASTERISK_ARI_PASSWORD', ''),
+    'password' => env('ASTERISK_ARI_PASSWORD'),
 
     'app' => env('ASTERISK_ARI_APP', 'laravel'),
 

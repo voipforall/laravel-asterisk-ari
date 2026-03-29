@@ -13,8 +13,8 @@ it('builds the websocket URL with proper encoding', function () {
     );
 
     $reflection = new ReflectionClass($ws);
-    $urlProperty = $reflection->getProperty('url');
-    $url = $urlProperty->getValue($ws);
+    $buildUrl = $reflection->getMethod('buildUrl');
+    $url = $buildUrl->invoke($ws);
 
     expect($url)
         ->toStartWith('ws://192.168.1.10:8088/ari/events?')
@@ -34,8 +34,8 @@ it('builds wss URL when scheme is wss', function () {
     );
 
     $reflection = new ReflectionClass($ws);
-    $urlProperty = $reflection->getProperty('url');
-    $url = $urlProperty->getValue($ws);
+    $buildUrl = $reflection->getMethod('buildUrl');
+    $url = $buildUrl->invoke($ws);
 
     expect($url)->toStartWith('wss://pbx.example.com:8089/ari/events?');
 });
@@ -50,8 +50,8 @@ it('defaults to ws scheme', function () {
     );
 
     $reflection = new ReflectionClass($ws);
-    $urlProperty = $reflection->getProperty('url');
-    $url = $urlProperty->getValue($ws);
+    $buildUrl = $reflection->getMethod('buildUrl');
+    $url = $buildUrl->invoke($ws);
 
     expect($url)->toStartWith('ws://');
 });

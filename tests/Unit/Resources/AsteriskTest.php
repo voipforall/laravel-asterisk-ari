@@ -1,6 +1,7 @@
 <?php
 
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Exceptions\AriConnectionException;
 use VoIPforAll\AsteriskAri\Resources\Asterisk;
 
 beforeEach(function () {
@@ -43,7 +44,7 @@ it('ping returns false on failure', function () {
     $this->client->shouldReceive('get')
         ->with('asterisk/info', ['only' => 'system'])
         ->once()
-        ->andThrow(new RuntimeException('Connection refused'));
+        ->andThrow(new AriConnectionException('Connection refused'));
 
     expect($this->asterisk->ping())->toBeFalse();
 });
