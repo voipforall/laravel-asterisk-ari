@@ -409,7 +409,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recen
 
 ### Security
 
-If you discover any security related issues, please email dev@voipforall.com.br instead of using the issue tracker.
+If you discover any security related issues, please email cristiano@voipforall.com.br instead of using the issue tracker.
 
 ## Credits
 
