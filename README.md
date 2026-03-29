@@ -1,6 +1,14 @@
+<p align="center">
+<img src="https://github.com/voipforall/tftp-client/assets/30990097/cd0f5703-190d-4ab3-bf7d-21bce29fbf67">
+</p>
+
 # Laravel Asterisk ARI
 
-A opinionated Laravel package for managing Asterisk PBX through the [Asterisk REST Interface (ARI)](https://docs.asterisk.org/Configuration/Interfaces/Asterisk-REST-Interface-ARI/).
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/voipforall/laravel-asterisk-ari.svg?style=flat-square)](https://packagist.org/packages/voipforall/laravel-asterisk-ari)
+[![Total Downloads](https://img.shields.io/packagist/dt/voipforall/laravel-asterisk-ari.svg?style=flat-square)](https://packagist.org/packages/voipforall/laravel-asterisk-ari)
+![GitHub Actions](https://github.com/voipforall/laravel-asterisk-ari/actions/workflows/tests.yml/badge.svg)
+
+An opinionated Laravel package for managing Asterisk PBX through the [Asterisk REST Interface (ARI)](https://docs.asterisk.org/Configuration/Interfaces/Asterisk-REST-Interface-ARI/).
 
 ## Requirements
 
@@ -39,7 +47,7 @@ ASTERISK_ARI_TIMEOUT=10
 | `ASTERISK_ARI_HOST` | Asterisk server IP or hostname | `127.0.0.1` |
 | `ASTERISK_ARI_PORT` | ARI HTTP port | `8088` |
 | `ASTERISK_ARI_USER` | ARI username | `asterisk` |
-| `ASTERISK_ARI_PASSWORD` | ARI password | _(empty)_ |
+| `ASTERISK_ARI_PASSWORD` | ARI password | _(required)_ |
 | `ASTERISK_ARI_APP` | Stasis application name | `laravel` |
 | `ASTERISK_ARI_SCHEME` | HTTP scheme (`http` or `https`) | `http` |
 | `ASTERISK_ARI_WS_SCHEME` | WebSocket scheme (`ws` or `wss`) | `ws` |
@@ -389,6 +397,25 @@ EventFactory::register('PlaybackFinished', \App\Events\PlaybackFinished::class);
 
 The custom event class must extend `VoIPforAll\AsteriskAri\Events\AriEvent`.
 
+### Testing
+
+```bash
+composer test
+```
+
+### Changelog
+
+Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
+
+### Security
+
+If you discover any security related issues, please email dev@voipforall.com.br instead of using the issue tracker.
+
+## Credits
+
+-   [VoIPforAll](https://github.com/voipforall)
+-   [All Contributors](../../contributors)
+
 ## License
 
-MIT
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
