@@ -2,6 +2,7 @@
 
 namespace VoIPforAll\AsteriskAri\Resources;
 
+use Throwable;
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
 
 class Asterisk
@@ -23,7 +24,7 @@ class Asterisk
             $this->info('system');
 
             return true;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }

@@ -2,11 +2,12 @@
 
 namespace VoIPforAll\AsteriskAri\Client;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
-use VoIPforAll\AsteriskAri\Exceptions\AriException;
 use VoIPforAll\AsteriskAri\Exceptions\AriConnectionException;
+use VoIPforAll\AsteriskAri\Exceptions\AriException;
 
 class AriClient implements AriClientInterface
 {
@@ -49,7 +50,7 @@ class AriClient implements AriClientInterface
             $response = $this->http()
                 ->when($query, fn (PendingRequest $r) => $r->withQueryParameters($query))
                 ->{$method}("{$this->baseUrl}/{$uri}", $data ?: null);
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        } catch (ConnectionException $e) {
             throw new AriConnectionException('Failed to connect to Asterisk ARI: '.$e->getMessage(), previous: $e);
         }
 

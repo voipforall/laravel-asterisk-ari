@@ -3,11 +3,13 @@
 namespace VoIPforAll\AsteriskAri\Client;
 
 use Closure;
+use Exception;
 use Ratchet\Client\Connector;
 use Ratchet\Client\WebSocket;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\EventLoop\Loop;
 use React\EventLoop\LoopInterface;
+use RuntimeException;
 
 class WebSocketClient
 {
@@ -63,7 +65,9 @@ class WebSocketClient
                     $data = json_decode((string) $msg, true);
 
                     if (json_last_error() !== JSON_ERROR_NONE) {
-                        $onError?.(new \RuntimeException('Invalid JSON from ARI WebSocket: '.json_last_error_msg()));
+                        if ($onError) {
+                            $onError(new RuntimeException('Invalid JSON from ARI WebSocket: '.json_last_error_msg()));
+                        }
 
                         return;
                     }
@@ -74,13 +78,17 @@ class WebSocketClient
                 $conn->on('close', function ($code = null, $reason = null) use ($onEvent, $onClose, $onError) {
                     $this->connection = null;
 
-                    $onClose?.($code, $reason);
+                    if ($onClose) {
+                        $onClose($code, $reason);
+                    }
 
                     $this->scheduleReconnect($onEvent, $onClose, $onError);
                 });
             },
-            function (\Exception $e) use ($onEvent, $onClose, $onError) {
-                $onError?.($e);
+            function (Exception $e) use ($onEvent, $onClose, $onError) {
+                if ($onError) {
+                    $onError($e);
+                }
 
                 $this->scheduleReconnect($onEvent, $onClose, $onError);
             }
