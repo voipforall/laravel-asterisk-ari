@@ -35,7 +35,7 @@ class Channels
             'callerId' => $callerId,
             'timeout' => $timeout,
             'app' => $app,
-        ]));
+        ], fn ($value) => $value !== null));
     }
 
     public function hangup(string $channelId, string $reason = 'normal'): array

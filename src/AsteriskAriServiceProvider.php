@@ -22,6 +22,7 @@ class AsteriskAriServiceProvider extends ServiceProvider
                 user: $config['user'],
                 password: $config['password'],
                 scheme: $config['scheme'],
+                timeout: $config['timeout'],
             );
         });
 

@@ -14,7 +14,7 @@ class Asterisk
     {
         return $this->client->get('asterisk/info', array_filter([
             'only' => $only,
-        ]));
+        ], fn ($value) => $value !== null));
     }
 
     public function ping(): bool

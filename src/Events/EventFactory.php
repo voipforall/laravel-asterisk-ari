@@ -30,6 +30,10 @@ class EventFactory
 
     public static function register(string $type, string $eventClass): void
     {
+        if (! is_subclass_of($eventClass, AriEvent::class)) {
+            throw new \InvalidArgumentException("{$eventClass} must extend ".AriEvent::class);
+        }
+
         self::$map[$type] = $eventClass;
     }
 }

@@ -16,6 +16,11 @@ class AriListenCommand extends Command
     {
         $this->info('Connecting to Asterisk ARI WebSocket...');
 
+        $this->trap([SIGTERM, SIGINT], function () use ($ws) {
+            $this->warn('Shutting down...');
+            $ws->stop();
+        });
+
         $ws->listen(
             onEvent: function (array $data) {
                 $type = $data['type'] ?? 'Unknown';
@@ -28,10 +33,11 @@ class AriListenCommand extends Command
                     event($event);
                 }
             },
+            onClose: function ($code, $reason) {
+                $this->warn("Connection closed: [{$code}] {$reason}");
+            },
             onError: function (\Exception $e) {
                 $this->error("Connection error: {$e->getMessage()}");
-
-                return self::FAILURE;
             },
         );
 

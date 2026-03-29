@@ -12,37 +12,49 @@ use VoIPforAll\AsteriskAri\Resources\Recordings;
 
 class AriManager
 {
+    private ?Endpoints $endpoints = null;
+
+    private ?Channels $channels = null;
+
+    private ?Bridges $bridges = null;
+
+    private ?DeviceStates $deviceStates = null;
+
+    private ?Recordings $recordings = null;
+
+    private ?Asterisk $asterisk = null;
+
     public function __construct(
         private readonly AriClientInterface $client,
     ) {}
 
     public function endpoints(): Endpoints
     {
-        return new Endpoints($this->client);
+        return $this->endpoints ??= new Endpoints($this->client);
     }
 
     public function channels(): Channels
     {
-        return new Channels($this->client);
+        return $this->channels ??= new Channels($this->client);
     }
 
     public function bridges(): Bridges
     {
-        return new Bridges($this->client);
+        return $this->bridges ??= new Bridges($this->client);
     }
 
     public function deviceStates(): DeviceStates
     {
-        return new DeviceStates($this->client);
+        return $this->deviceStates ??= new DeviceStates($this->client);
     }
 
     public function recordings(): Recordings
     {
-        return new Recordings($this->client);
+        return $this->recordings ??= new Recordings($this->client);
     }
 
     public function asterisk(): Asterisk
     {
-        return new Asterisk($this->client);
+        return $this->asterisk ??= new Asterisk($this->client);
     }
 }

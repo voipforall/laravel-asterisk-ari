@@ -25,7 +25,7 @@ class Bridges
         return $this->client->post('bridges', array_filter([
             'type' => $type,
             'name' => $name,
-        ]));
+        ], fn ($value) => $value !== null));
     }
 
     public function destroy(string $bridgeId): array
@@ -36,14 +36,19 @@ class Bridges
     public function addChannel(string $bridgeId, string|array $channels): array
     {
         return $this->client->post("bridges/{$bridgeId}/addChannel", [
-            'channel' => is_array($channels) ? implode(',', $channels) : $channels,
+            'channel' => $this->formatChannels($channels),
         ]);
     }
 
     public function removeChannel(string $bridgeId, string|array $channels): array
     {
         return $this->client->post("bridges/{$bridgeId}/removeChannel", [
-            'channel' => is_array($channels) ? implode(',', $channels) : $channels,
+            'channel' => $this->formatChannels($channels),
         ]);
+    }
+
+    private function formatChannels(string|array $channels): string
+    {
+        return is_array($channels) ? implode(',', $channels) : $channels;
     }
 }

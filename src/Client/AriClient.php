@@ -18,6 +18,7 @@ class AriClient implements AriClientInterface
         private readonly string $user,
         private readonly string $password,
         private readonly string $scheme = 'http',
+        private readonly int $timeout = 10,
     ) {
         $this->baseUrl = "{$this->scheme}://{$this->host}:{$this->port}/ari";
     }
@@ -49,7 +50,7 @@ class AriClient implements AriClientInterface
                 ->when($query, fn (PendingRequest $r) => $r->withQueryParameters($query))
                 ->{$method}("{$this->baseUrl}/{$uri}", $data ?: null);
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            throw new AriConnectionException("Failed to connect to Asterisk ARI at {$this->baseUrl}: {$e->getMessage()}", previous: $e);
+            throw new AriConnectionException('Failed to connect to Asterisk ARI: '.$e->getMessage(), previous: $e);
         }
 
         if ($response->failed()) {
@@ -70,6 +71,6 @@ class AriClient implements AriClientInterface
     {
         return Http::withBasicAuth($this->user, $this->password)
             ->acceptJson()
-            ->timeout(10);
+            ->timeout($this->timeout);
     }
 }

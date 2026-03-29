@@ -16,4 +16,6 @@ return [
 
     'ws_scheme' => env('ASTERISK_ARI_WS_SCHEME', 'ws'),
 
+    'timeout' => env('ASTERISK_ARI_TIMEOUT', 10),
+
 ];
