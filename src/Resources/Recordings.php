@@ -4,6 +4,8 @@ namespace VoIPforAll\AsteriskAri\Resources;
 
 use VoIPforAll\AsteriskAri\Concerns\BuildsAriPaths;
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Contracts\RawAriClientInterface;
+use VoIPforAll\AsteriskAri\Exceptions\AriException;
 
 class Recordings
 {
@@ -27,9 +29,14 @@ class Recordings
      * Download a stored recording's audio as a binary string.
      *
      * @throws \InvalidArgumentException when the name is absolute or tries to traverse directories.
+     * @throws AriException when the client cannot return raw bodies.
      */
     public function getStoredFile(string $name): string
     {
+        if (! $this->client instanceof RawAriClientInterface) {
+            throw new AriException('The ARI client does not support raw downloads (implement RawAriClientInterface).');
+        }
+
         return $this->client->getRaw("recordings/stored/{$this->recordingPath($name)}/file");
     }
 

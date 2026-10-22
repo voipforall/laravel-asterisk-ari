@@ -443,7 +443,7 @@ Ari::asterisk()->reloadModule('res_pjsip.so');
 
 ### Raw binary requests
 
-`AriClientInterface::getRaw(string $uri, array $query = []): string` returns the raw response body (used by `getStoredFile()`), with the same `AriException` / `AriConnectionException` errors as the JSON methods. Custom implementations of `AriClientInterface` must add this method.
+`RawAriClientInterface::getRaw(string $uri, array $query = []): string` (implemented by the bundled `AriClient`) returns the raw response body used by `getStoredFile()`, with the same `AriException` / `AriConnectionException` errors as the JSON methods. Custom implementations of `AriClientInterface` keep working; implement `RawAriClientInterface` to enable recording downloads.
 
 ---
 

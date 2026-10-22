@@ -1,10 +1,12 @@
 <?php
 
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Contracts\RawAriClientInterface;
+use VoIPforAll\AsteriskAri\Exceptions\AriException;
 use VoIPforAll\AsteriskAri\Resources\Recordings;
 
 beforeEach(function () {
-    $this->client = Mockery::mock(AriClientInterface::class);
+    $this->client = Mockery::mock(RawAriClientInterface::class);
     $this->recordings = new Recordings($this->client);
 });
 
@@ -146,4 +148,10 @@ it('encodes query and fragment characters in a stored recording name', function 
         ->andReturn([]);
 
     $this->recordings->deleteStored('voicebot/turn?1#1');
+});
+
+it('refuses a raw download when the client only implements the base contract', function () {
+    $recordings = new Recordings(Mockery::mock(AriClientInterface::class));
+
+    expect(fn () => $recordings->getStoredFile('vmai-turn'))->toThrow(AriException::class);
 });

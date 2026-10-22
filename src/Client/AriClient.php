@@ -6,11 +6,11 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Contracts\RawAriClientInterface;
 use VoIPforAll\AsteriskAri\Exceptions\AriConnectionException;
 use VoIPforAll\AsteriskAri\Exceptions\AriException;
 
-class AriClient implements AriClientInterface
+class AriClient implements RawAriClientInterface
 {
     private const MAX_RAW_RESPONSE_BYTES = 64 * 1024 * 1024;
 
