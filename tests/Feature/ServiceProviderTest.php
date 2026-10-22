@@ -2,8 +2,12 @@
 
 use VoIPforAll\AsteriskAri\AriManager;
 use VoIPforAll\AsteriskAri\Client\AriClient;
+use VoIPforAll\AsteriskAri\Client\AsyncAriClient;
 use VoIPforAll\AsteriskAri\Client\WebSocketClient;
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Facades\Ari;
+use VoIPforAll\AsteriskAri\Resources\Applications;
+use VoIPforAll\AsteriskAri\Resources\Playbacks;
 
 it('registers AriClientInterface as singleton', function () {
     $client1 = app(AriClientInterface::class);
@@ -44,7 +48,28 @@ it('loads configuration with correct defaults', function () {
 });
 
 it('resolves AriManager through the Ari facade', function () {
-    $manager = VoIPforAll\AsteriskAri\Facades\Ari::getFacadeRoot();
+    $manager = Ari::getFacadeRoot();
 
     expect($manager)->toBeInstanceOf(AriManager::class);
+});
+
+it('exposes playbacks and applications through the facade', function () {
+    expect(\Ari::playbacks())->toBeInstanceOf(Playbacks::class)
+        ->and(\Ari::applications())->toBeInstanceOf(Applications::class);
+});
+
+it('configures the websocket subscribeAll flag', function () {
+    expect(config('asterisk.subscribe_all'))->toBeTrue()
+        ->and(app(WebSocketClient::class)->subscribesAll())->toBeTrue();
+
+    app()->forgetInstance(WebSocketClient::class);
+    config()->set('asterisk.subscribe_all', false);
+
+    expect(app(WebSocketClient::class)->subscribesAll())->toBeFalse();
+});
+
+it('registers the AsyncAriClient as a singleton', function () {
+    expect(app(AsyncAriClient::class))
+        ->toBeInstanceOf(AsyncAriClient::class)
+        ->toBe(app(AsyncAriClient::class));
 });

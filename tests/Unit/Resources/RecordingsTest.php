@@ -76,3 +76,74 @@ it('unpauses a live recording', function () {
 
     $this->recordings->unpause('active-rec');
 });
+
+it('downloads a stored recording file as binary', function () {
+    $this->client->shouldReceive('getRaw')
+        ->with('recordings/stored/voicebot/turn-1/file')
+        ->once()
+        ->andReturn("RIFF\x00\x01binary");
+
+    expect($this->recordings->getStoredFile('voicebot/turn-1'))->toBe("RIFF\x00\x01binary");
+});
+
+it('url-encodes each segment of a stored recording name', function () {
+    $this->client->shouldReceive('getRaw')
+        ->with('recordings/stored/my%20rec%3F/file')
+        ->once()
+        ->andReturn('');
+
+    $this->recordings->getStoredFile('my rec?');
+});
+
+it('rejects recording names that traverse directories', function (string $name) {
+    $this->client->shouldNotReceive('getRaw');
+
+    $this->recordings->getStoredFile($name);
+})->throws(InvalidArgumentException::class)->with([
+    'parent' => ['../etc/passwd'],
+    'nested parent' => ['voicebot/../../secret'],
+    'absolute' => ['/var/spool/asterisk/recording/x'],
+    'empty' => [''],
+    'empty segment' => ['a//b'],
+    'backslash' => ['..\\x'],
+    'null byte' => ["rec\0.wav"],
+]);
+
+it('copies a stored recording', function () {
+    $this->client->shouldReceive('post')
+        ->with('recordings/stored/source/copy', ['destinationRecordingName' => 'archive/source'])
+        ->once()
+        ->andReturn(['name' => 'archive/source']);
+
+    expect($this->recordings->copyStored('source', 'archive/source'))->toHaveKey('name', 'archive/source');
+});
+
+it('rejects a traversing destination name when copying', function () {
+    $this->client->shouldNotReceive('post');
+
+    $this->recordings->copyStored('source', '../outside');
+})->throws(InvalidArgumentException::class);
+
+it('rejects traversal in every stored and live recording method', function (string $method, string $name) {
+    $this->client->shouldNotReceive('get', 'post', 'delete');
+
+    $this->recordings->{$method}($name);
+})->throws(InvalidArgumentException::class)->with([
+    'deleteStored parent' => ['deleteStored', '../x'],
+    'deleteStored absolute' => ['deleteStored', '/abs'],
+    'deleteStored backslash' => ['deleteStored', 'a\\b'],
+    'getStored parent' => ['getStored', 'voicebot/../../x'],
+    'getLive parent' => ['getLive', '../x'],
+    'stop parent' => ['stop', '../x'],
+    'pause absolute' => ['pause', '/abs'],
+    'unpause backslash' => ['unpause', 'a\\b'],
+]);
+
+it('encodes query and fragment characters in a stored recording name', function () {
+    $this->client->shouldReceive('delete')
+        ->with('recordings/stored/voicebot/turn%3F1%231')
+        ->once()
+        ->andReturn([]);
+
+    $this->recordings->deleteStored('voicebot/turn?1#1');
+});

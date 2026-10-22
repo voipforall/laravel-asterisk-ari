@@ -23,21 +23,60 @@ class WebSocketClient
 
     private const MAX_RECONNECT_DELAY = 60;
 
+    private readonly string $app;
+
+    /**
+     * @param  string|array<int, string>  $app  one Stasis application, or several (array or comma-separated)
+     * @param  bool  $subscribeAll  receive every event in the system (true, v1.0 behaviour) or only the
+     *                              application's own channels/subscriptions (false)
+     */
     public function __construct(
         private readonly string $host,
         private readonly int $port,
         private readonly string $user,
         private readonly string $password,
-        private readonly string $app,
+        string|array $app,
         private readonly string $scheme = 'ws',
-    ) {}
+        private readonly bool $subscribeAll = true,
+    ) {
+        $this->app = is_array($app) ? implode(',', $app) : $app;
+    }
+
+    /**
+     * Build a client from the package configuration, optionally overriding the application(s) and subscribeAll.
+     *
+     * @param  array<string, mixed>  $config  the "asterisk" configuration array
+     * @param  string|array<int, string>|null  $app
+     */
+    public static function fromConfig(array $config, string|array|null $app = null, ?bool $subscribeAll = null): self
+    {
+        return new self(
+            host: (string) $config['host'],
+            port: (int) $config['port'],
+            user: (string) $config['user'],
+            password: (string) $config['password'],
+            app: $app ?? $config['app'],
+            scheme: (string) ($config['ws_scheme'] ?? 'ws'),
+            subscribeAll: $subscribeAll ?? filter_var($config['subscribe_all'] ?? true, FILTER_VALIDATE_BOOL),
+        );
+    }
+
+    public function app(): string
+    {
+        return $this->app;
+    }
+
+    public function subscribesAll(): bool
+    {
+        return $this->subscribeAll;
+    }
 
     private function buildUrl(): string
     {
         $query = http_build_query([
             'api_key' => "{$this->user}:{$this->password}",
             'app' => $this->app,
-            'subscribeAll' => 'true',
+            'subscribeAll' => $this->subscribeAll ? 'true' : 'false',
         ]);
 
         return "{$this->scheme}://{$this->host}:{$this->port}/ari/events?{$query}";
@@ -88,12 +127,30 @@ class WebSocketClient
             },
             function (Exception $e) use ($onEvent, $onClose, $onError) {
                 if ($onError) {
-                    $onError($e);
+                    $onError($this->redact($e));
                 }
 
                 $this->scheduleReconnect($onEvent, $onClose, $onError);
             }
         );
+    }
+
+    /**
+     * Strip the credentials (sent as the api_key query parameter) from connection errors, since some
+     * connector errors embed the full WebSocket URL.
+     */
+    private function redact(Exception $e): Exception
+    {
+        $secrets = array_filter([
+            "{$this->user}:{$this->password}",
+            urlencode("{$this->user}:{$this->password}"),
+            rawurlencode("{$this->user}:{$this->password}"),
+            $this->password,
+        ], fn (string $secret) => $secret !== '');
+
+        $message = str_replace($secrets, '***', $e->getMessage());
+
+        return $message === $e->getMessage() ? $e : new RuntimeException($message, (int) $e->getCode());
     }
 
     private function scheduleReconnect(Closure $onEvent, ?Closure $onClose, ?Closure $onError): void

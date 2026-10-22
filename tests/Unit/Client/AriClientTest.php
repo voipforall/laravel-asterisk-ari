@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use VoIPforAll\AsteriskAri\Client\AriClient;
 use VoIPforAll\AsteriskAri\Exceptions\AriConnectionException;
@@ -47,8 +48,8 @@ it('makes a GET request with query parameters', function () {
 
     expect($result)->toHaveKey('system');
 
-    Http::assertSent(fn ($request) => str_contains($request->method(), 'GET')
-        && str_contains($request->url(), 'asterisk/info')
+    Http::assertSent(fn ($request) => $request->method() === 'GET'
+        && $request->url() === 'http://127.0.0.1:8088/ari/asterisk/info?only=system'
     );
 });
 
@@ -81,9 +82,13 @@ it('makes a DELETE request', function () {
         'http://127.0.0.1:8088/ari/channels/ch-123*' => Http::response([], 204),
     ]);
 
-    $result = $this->client->delete('channels/ch-123', ['reason_code' => 'normal']);
+    $result = $this->client->delete('channels/ch-123', ['reason' => 'normal']);
 
     expect($result)->toBe([]);
+
+    Http::assertSent(fn ($request) => $request->method() === 'DELETE'
+        && $request->url() === 'http://127.0.0.1:8088/ari/channels/ch-123?reason=normal'
+    );
 });
 
 it('returns empty array for 204 No Content', function () {
@@ -107,13 +112,13 @@ it('throws AriException on 4xx/5xx response', function () {
 })->throws(AriException::class, 'Channel not found');
 
 it('throws AriConnectionException on connection failure', function () {
-    Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('Connection refused'));
+    Http::fake(fn () => throw new ConnectionException('Connection refused'));
 
     $this->client->get('channels');
 })->throws(AriConnectionException::class, 'Failed to connect to Asterisk ARI');
 
 it('does not expose host in connection error message', function () {
-    Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('timeout'));
+    Http::fake(fn () => throw new ConnectionException('timeout'));
 
     try {
         $this->client->get('channels');
@@ -136,3 +141,62 @@ it('sends basic auth credentials', function () {
             && base64_decode(substr($auth, 6)) === 'asterisk:secret';
     });
 });
+
+it('returns the raw body on getRaw', function () {
+    Http::fake([
+        'http://127.0.0.1:8088/ari/recordings/stored/rec/file' => Http::response("RIFF\x00binary", 200, ['Content-Type' => 'audio/wav']),
+    ]);
+
+    expect($this->client->getRaw('recordings/stored/rec/file'))->toBe("RIFF\x00binary");
+
+    Http::assertSent(function ($request) {
+        $auth = $request->header('Authorization')[0] ?? '';
+
+        return $request->method() === 'GET'
+            && base64_decode(substr($auth, 6)) === 'asterisk:secret';
+    });
+});
+
+it('sends query parameters on getRaw', function () {
+    Http::fake(['*' => Http::response('x')]);
+
+    $this->client->getRaw('some/file', ['a' => 'b']);
+
+    Http::assertSent(fn ($request) => str_ends_with($request->url(), 'some/file?a=b'));
+});
+
+it('throws AriException on a failed getRaw', function () {
+    Http::fake([
+        '*' => Http::response(['message' => 'Recording not found'], 404),
+    ]);
+
+    $this->client->getRaw('recordings/stored/missing/file');
+})->throws(AriException::class, 'Recording not found');
+
+it('uses a generic message when a failed getRaw body is not JSON', function () {
+    Http::fake([
+        '*' => Http::response('<html>boom</html>', 500, ['Content-Type' => 'text/html']),
+    ]);
+
+    try {
+        $this->client->getRaw('recordings/stored/x/file');
+        $this->fail('Expected AriException');
+    } catch (AriException $e) {
+        expect($e->getMessage())->toBe('ARI request failed')
+            ->and($e->getCode())->toBe(500);
+    }
+});
+
+it('throws AriConnectionException on a getRaw connection failure', function () {
+    Http::fake(fn () => throw new ConnectionException('Connection refused'));
+
+    $this->client->getRaw('recordings/stored/x/file');
+})->throws(AriConnectionException::class);
+
+it('rejects a getRaw response whose declared length exceeds the limit', function () {
+    Http::fake([
+        '*' => Http::response('x', 200, ['Content-Length' => (string) (64 * 1024 * 1024 + 1)]),
+    ]);
+
+    $this->client->getRaw('recordings/stored/huge/file');
+})->throws(AriException::class, 'ARI response too large');

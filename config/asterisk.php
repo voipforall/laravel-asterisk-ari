@@ -18,4 +18,10 @@ return [
 
     'timeout' => env('ASTERISK_ARI_TIMEOUT', 10),
 
+    /*
+    | Receive every event in the system on the WebSocket (true, the v1.0 behaviour) or only
+    | the events of the application's own channels and explicit subscriptions (false).
+    */
+    'subscribe_all' => env('ASTERISK_ARI_SUBSCRIBE_ALL', true),
+
 ];

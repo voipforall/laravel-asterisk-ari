@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-22
+
+### Added
+- `AriClientInterface::getRaw()` (raw/binary GET) implemented by `AriClient`
+- Recordings: `getStoredFile()` (download audio as binary) and `copyStored()`, with recording-name validation against path traversal
+- Channels: `play()`, `continueInDialplan()`, `redirect()`, `snoop()` (whisper `none` by default), `externalMedia()` (RTP, AudioSocket, WebSocket client/server)
+- Channels: `record()` accepts `maxDurationSeconds`, `maxSilenceSeconds`, `ifExists`, `beep` and `terminateOn`
+- Channels: `originate()` accepts `appArgs`, `channelId`, `variables`, `priority`, `label` and `otherChannelId`
+- New `Playbacks` resource (`get`, `stop`, `control`) and `Applications` resource (`list`, `get`, `subscribe`, `unsubscribe`), exposed by `AriManager` and the `Ari` facade
+- Asterisk: `setVariable()`, `listModules()`, `getModule()`, `loadModule()`, `unloadModule()`, `reloadModule()`
+- `WebSocketClient`: configurable `subscribeAll` (constructor and `asterisk.subscribe_all` / `ASTERISK_ARI_SUBSCRIBE_ALL`, default `true`), several applications (array or comma-separated) and `WebSocketClient::fromConfig()`
+- `AsyncAriClient`: non-blocking ARI client on the ReactPHP event loop returning promises, with timeout and cancellation
+- Integration test suite (`--group=integration`, enabled with `ARI_INTEGRATION=1`)
+
+### Fixed
+- `AriClient::get()` dropped query parameters (e.g. `Asterisk::info(only: ...)`, `getVariable()` and `Channels::getVariable()` failed with "Variable name is required")
+- `Channels::hangup()` sent textual reasons as `reason_code`, which Asterisk rejects; textual reasons are now sent as `reason` and numeric causes as `reason_code`
+
 ## [1.0.1] - 2026-03-29
 
 ### Added

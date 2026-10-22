@@ -59,3 +59,63 @@ it('gets a global variable', function () {
 
     expect($result)->toHaveKey('value', 'hello');
 });
+
+it('sets a global variable', function () {
+    $this->client->shouldReceive('post')
+        ->with('asterisk/variable', ['variable' => 'VM_FLAG', 'value' => '1'])
+        ->once()
+        ->andReturn([]);
+
+    $this->asterisk->setVariable('VM_FLAG', '1');
+});
+
+it('lists modules', function () {
+    $this->client->shouldReceive('get')
+        ->with('asterisk/modules')
+        ->once()
+        ->andReturn([['name' => 'res_pjsip.so']]);
+
+    expect($this->asterisk->listModules())->toHaveCount(1);
+});
+
+it('gets a module', function () {
+    $this->client->shouldReceive('get')
+        ->with('asterisk/modules/res_pjsip.so')
+        ->once()
+        ->andReturn(['name' => 'res_pjsip.so', 'status' => 'Running']);
+
+    expect($this->asterisk->getModule('res_pjsip.so'))->toHaveKey('status', 'Running');
+});
+
+it('loads a module', function () {
+    $this->client->shouldReceive('post')
+        ->with('asterisk/modules/app_queue.so')
+        ->once()
+        ->andReturn([]);
+
+    $this->asterisk->loadModule('app_queue.so');
+});
+
+it('unloads a module', function () {
+    $this->client->shouldReceive('delete')
+        ->with('asterisk/modules/app_queue.so')
+        ->once()
+        ->andReturn([]);
+
+    $this->asterisk->unloadModule('app_queue.so');
+});
+
+it('reloads a module', function () {
+    $this->client->shouldReceive('put')
+        ->with('asterisk/modules/res_pjsip.so')
+        ->once()
+        ->andReturn([]);
+
+    $this->asterisk->reloadModule('res_pjsip.so');
+});
+
+it('rejects a traversing module name', function () {
+    $this->client->shouldNotReceive('put');
+
+    $this->asterisk->reloadModule('..');
+})->throws(InvalidArgumentException::class);

@@ -2,11 +2,13 @@
 
 use VoIPforAll\AsteriskAri\AriManager;
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Resources\Applications;
 use VoIPforAll\AsteriskAri\Resources\Asterisk;
 use VoIPforAll\AsteriskAri\Resources\Bridges;
 use VoIPforAll\AsteriskAri\Resources\Channels;
 use VoIPforAll\AsteriskAri\Resources\DeviceStates;
 use VoIPforAll\AsteriskAri\Resources\Endpoints;
+use VoIPforAll\AsteriskAri\Resources\Playbacks;
 use VoIPforAll\AsteriskAri\Resources\Recordings;
 
 beforeEach(function () {
@@ -50,4 +52,14 @@ it('returns different instances for different resources', function () {
     $bridges = $this->manager->bridges();
 
     expect($channels)->not->toBe($bridges);
+});
+
+it('returns a Playbacks resource', function () {
+    expect($this->manager->playbacks())->toBeInstanceOf(Playbacks::class)
+        ->and($this->manager->playbacks())->toBe($this->manager->playbacks());
+});
+
+it('returns an Applications resource', function () {
+    expect($this->manager->applications())->toBeInstanceOf(Applications::class)
+        ->and($this->manager->applications())->toBe($this->manager->applications());
 });

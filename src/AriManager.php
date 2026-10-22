@@ -3,11 +3,13 @@
 namespace VoIPforAll\AsteriskAri;
 
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
+use VoIPforAll\AsteriskAri\Resources\Applications;
 use VoIPforAll\AsteriskAri\Resources\Asterisk;
 use VoIPforAll\AsteriskAri\Resources\Bridges;
 use VoIPforAll\AsteriskAri\Resources\Channels;
 use VoIPforAll\AsteriskAri\Resources\DeviceStates;
 use VoIPforAll\AsteriskAri\Resources\Endpoints;
+use VoIPforAll\AsteriskAri\Resources\Playbacks;
 use VoIPforAll\AsteriskAri\Resources\Recordings;
 
 class AriManager
@@ -23,6 +25,10 @@ class AriManager
     private ?Recordings $recordings = null;
 
     private ?Asterisk $asterisk = null;
+
+    private ?Playbacks $playbacks = null;
+
+    private ?Applications $applications = null;
 
     public function __construct(
         private readonly AriClientInterface $client,
@@ -56,5 +62,15 @@ class AriManager
     public function asterisk(): Asterisk
     {
         return $this->asterisk ??= new Asterisk($this->client);
+    }
+
+    public function playbacks(): Playbacks
+    {
+        return $this->playbacks ??= new Playbacks($this->client);
+    }
+
+    public function applications(): Applications
+    {
+        return $this->applications ??= new Applications($this->client);
     }
 }
