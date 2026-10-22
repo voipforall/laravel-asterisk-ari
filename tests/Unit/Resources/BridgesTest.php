@@ -96,3 +96,12 @@ it('removes multiple channels from a bridge', function () {
 
     $this->bridges->removeChannel('br-123', ['ch-1', 'ch-2']);
 });
+
+it('creates a bridge with a chosen id', function () {
+    $this->client->shouldReceive('post')
+        ->once()
+        ->with('bridges/vmls-bridge-42', ['type' => 'mixing', 'name' => 'tap'])
+        ->andReturn(['id' => 'vmls-bridge-42']);
+
+    expect($this->bridges->create('mixing', 'tap', 'vmls-bridge-42'))->toBe(['id' => 'vmls-bridge-42']);
+});

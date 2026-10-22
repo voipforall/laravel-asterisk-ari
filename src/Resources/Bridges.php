@@ -2,10 +2,13 @@
 
 namespace VoIPforAll\AsteriskAri\Resources;
 
+use VoIPforAll\AsteriskAri\Concerns\BuildsAriPaths;
 use VoIPforAll\AsteriskAri\Contracts\AriClientInterface;
 
 class Bridges
 {
+    use BuildsAriPaths;
+
     public function __construct(
         private readonly AriClientInterface $client,
     ) {}
@@ -20,9 +23,14 @@ class Bridges
         return $this->client->get("bridges/{$bridgeId}");
     }
 
-    public function create(string $type = 'mixing', ?string $name = null): array
+    /**
+     * Create a bridge; with `$bridgeId` the bridge gets that id (POST /bridges/{bridgeId}).
+     */
+    public function create(string $type = 'mixing', ?string $name = null, ?string $bridgeId = null): array
     {
-        return $this->client->post('bridges', array_filter([
+        $uri = $bridgeId === null ? 'bridges' : 'bridges/'.$this->segment($bridgeId);
+
+        return $this->client->post($uri, array_filter([
             'type' => $type,
             'name' => $name,
         ], fn ($value) => $value !== null));
